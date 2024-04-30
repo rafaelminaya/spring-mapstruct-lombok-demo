@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.5</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.rminaya</groupId>
+    <artifactId>mapstruct-lombok-demo</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>mapstruct-lombok-demo</name>
+    <description>Demo project for Spring Boot</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <!-- Indicamos las versiones mas estables a la fecha de MapStruct, lombok y la vinculacion de ambos -->
+        <!-- Usado con la documentacion https://mapstruct.org/documentation/stable/reference/html/#lombok -->
+        <org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
+        <org.projectlombok.version>1.18.32</org.projectlombok.version>
+        <lombok-mapstruct-binding>0.2.0</lombok-mapstruct-binding> <!-- version de vinculacion entre estos dos MapStruct y lombok -->
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- ============================== 1) DEPENDENCIA DE LOMBOK ============================== -->
+        <!-- Dependencia de Lombok, agregada con start.spring.io -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <!--<optional>true</optional> --> <!-- Removemos esta etiqueta -->
+            <!-- Agregamos este alcance como "provided" para que la librería de lombok solo se utilice al compilar(desarrollo)
+            y no se considere al momento de generar el ".jar" -->
+            <scope>provided</scope>
+            <version>${org.projectlombok.version}</version> <!-- version de lombok -->
+        </dependency>
+
+        <!-- ============================== 2) DEPENDENCIA DE MAPSTRUCT ============================== -->
+        <!-- Dependencia de MapStruct, agregada manualmente -->
+        <!-- Ademas se necesita agregar el plugin de mapstruct mas abajo -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${org.mapstruct.version}</version> <!-- version de MapStruct -->
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+
+                <!-- ============================== 3) PLUGIN DE LOMBOK ============================== -->
+                <!-- Modificicación automatica del plugin desde la plataforma de start.spring.io para excluir a lombok al generar un ".jar" -->
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- ============================== 4) PLUGIN DE MAPSTRUCT, LOMBOK Y LA VINCULACION DE AMBOS ============================== -->
+            <!-- Plugin de MapStruct, agregado manualmente, que trabaja en conjunto con la dependencia agregada mas arriba -->
+            <!-- Este plugin es necesario puesto que MapStruct trabaja con interfaces o clases abstractas en tiempo de compilacion -->
+            <!-- Estas interfaces o clases abstractas seran implementadas en clases concretas y almacenadas en la carpeta "target/generated-sources" -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>17</source> <!-- Cambiamos a la version 17, por defecto 1.8 -->
+                    <target>17</target> <!-- Cambiamos a la version 17, por defecto 1.8 -->
+
+                    <!-- Con <annotationProcessorPaths>, se configuran las "Rutas del procesador de anotaciones"  -->
+                    <!-- En este caso indicando la ruta hacia nuestra dependencia y version de MapStruct -->
+                    <!-- Con el fin de buscar sus anotaciones(@Mapper, @Mapping, etc) en las interfaces para generar la implementadas de sus clases -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${org.mapstruct.version}</version> <!-- version de MapStruct -->
+                        </path>
+                        <!-- Agregamos esta "Ruta del procesador de anotaciones" de lombok para que trabaje la librería y busque las anotaciones -->
+                        <!-- Aunque principalmente para que, mas abajo poder vincular con MapStruct -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${org.projectlombok.version}</version> <!-- version de lombok -->
+                        </path>
+                        <!-- Vinculacion de lombok con MapStruct para que trabajen juntos correctamente en tiempo de compilacion -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok-mapstruct-binding</artifactId>
+                            <version>${lombok-mapstruct-binding}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
